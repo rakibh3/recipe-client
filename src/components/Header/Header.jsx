@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
+import { FaGoogle } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,13 +39,13 @@ const Navbar = () => {
       .then(() => {
         setUser(null);
 
-        toast.success('Logut Successfully!', {
-          duration: 8000,
+        toast.success('Logout Successfully!', {
+          duration: 5000,
         });
       })
       .catch((error) => {
         toast.error(error.message, {
-          duration: 8000,
+          duration: 5000,
         });
       });
   };
@@ -112,10 +113,11 @@ const Navbar = () => {
             ) : (
               <>
                 <button
-                  className=" py-1 bg-rose-600 text-white font-bold  px-4 rounded hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-opacity-50"
+                  className="flex py-1 bg-rose-600 text-white font-bold  px-4 rounded hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-opacity-50"
                   onClick={handleGoogleSignIn}
                 >
-                  Login
+                  <FaGoogle className="mt-[3px] mr-1 text-gray-300" />
+                  <p>Login</p>
                 </button>
               </>
             )}
