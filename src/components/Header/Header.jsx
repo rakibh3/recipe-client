@@ -1,29 +1,19 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import logo from '../../assets/logo.svg';
-import app from '../../firebase/firebase.init';
 import { NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import {
-  GoogleAuthProvider,
-  getAuth,
-  signInWithPopup,
-  signOut,
-} from 'firebase/auth';
 import { FaGoogle } from 'react-icons/fa';
+import { AuthContext } from '../../providers/AuthProvider';
+import { BsCoin } from 'react-icons/bs';
 
 const Navbar = () => {
+  const { user, logOut, googleSignIn } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
 
-  const [user, setUser] = useState(null);
-  const provider = new GoogleAuthProvider();
-  const auth = getAuth(app);
-
   const handleGoogleSignIn = () => {
-    signInWithPopup(auth, provider)
+    googleSignIn()
       .then((result) => {
-        const loggedInuser = result.user;
-        setUser(loggedInuser);
-        toast.success('Login Successfully!', {
+        toast.success(`Login Successful ${result.user.displayName}`, {
           duration: 8000,
         });
       })
@@ -35,11 +25,9 @@ const Navbar = () => {
   };
 
   const handleGoogleLogout = () => {
-    signOut(auth)
+    logOut()
       .then(() => {
-        setUser(null);
-
-        toast.success('Logout Successfully!', {
+        toast.success('Logout Successful!', {
           duration: 5000,
         });
       })
@@ -58,11 +46,12 @@ const Navbar = () => {
     <nav className="bg-white sticky top-0 shadow-md z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 ">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 ">
             <NavLink to="/" className="text-2xl font-bold text-rose-600">
               <img src={logo} alt="logo" width={40} height={40} />
             </NavLink>
           </div>
+
           <div className="hidden md:flex space-x-6 items-center">
             <NavLink
               className={({ isActive }) =>
@@ -94,6 +83,10 @@ const Navbar = () => {
             >
               Add-recipes
             </NavLink>
+            <div className="flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
+              <BsCoin className="w-6 h-6 text-yellow-500" />
+              <span className="text-gray-800 font-bold">100</span>
+            </div>
             {user ? (
               <>
                 {user?.photoURL && (
@@ -169,6 +162,11 @@ const Navbar = () => {
 
               <NavLink to="/recipes">Recipes</NavLink>
               <NavLink to="/add-recipe">Add-recipes</NavLink>
+              {/* Mobile Coin */}
+              <div className="w-[90px] px-2 flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
+                <BsCoin className="w-6 h-6 text-yellow-500" />
+                <span className="text-gray-800 font-bold">100</span>
+              </div>
               {user ? (
                 <div className="space-y-2">
                   {user?.photoURL && (
