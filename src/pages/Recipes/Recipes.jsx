@@ -1,14 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HeartIcon } from 'lucide-react';
-import { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AuthContext } from '../../providers/AuthProvider';
 
 const Recipes = () => {
-  // const { user } = useContext(AuthContext);
-  // console.log(user?.email);
-
   return (
     <>
       <Card className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-lg shadow-md mt-14 items-center">

@@ -29,6 +29,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log(currentUser?.email);
       setUser(currentUser);
       setLoading(false);
     });
@@ -39,6 +40,7 @@ const AuthProvider = ({ children }) => {
 
   const authInfo = {
     user,
+    loading,
     googleSignIn,
     logOut,
   };

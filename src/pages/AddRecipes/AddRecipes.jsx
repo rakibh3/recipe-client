@@ -1,109 +1,191 @@
-/* eslint-disable react/prop-types */
-import { GlobeIcon, MailIcon, StarIcon, UserIcon } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { z } from 'zod';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import SelectCategory from '../../components/Form/SelectCategory';
+import toast from 'react-hot-toast';
 
-// const youtubeCode = I_6aMZwf9CU;
-const AddRecipes = ({ videoId = 'I_6aMZwf9CU' }) => {
+const schema = z.object({
+  name: z.string({
+    required_error: 'Recipe name is required',
+  }),
+  image: z.any({
+    required_error: 'Recipe image is required',
+  }),
+  details: z.string({
+    required_error: 'Recipe details is required',
+  }),
+  video: z.string({
+    required_error: 'YouTube video code is required',
+  }),
+  country: z.string({
+    required_error: 'Country is required',
+  }),
+  category: z.string({
+    required_error: 'Category is required',
+  }),
+});
+
+const defaultValues = {
+  name: '',
+  image: '',
+  details: '',
+  video: '',
+  country: '',
+  category: '',
+};
+
+const AddRecipes = () => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  const categoryOptions = [
+    { value: 'appetizer', label: 'Appetizer' },
+    { value: 'main-dish', label: 'Main Dish' },
+    { value: 'dessert', label: 'Dessert' },
+    { value: 'salad', label: 'Salad' },
+    { value: 'soup', label: 'Soup' },
+  ];
+
+  const onSubmit = (data) => {
+    // Filter out default values that are not empty
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(
+        ([key, value]) => value !== defaultValues[key]
+      )
+    );
+    if (Object.keys(filteredData).length === 0) {
+      toast.error('Please fill out all required fields.');
+    } else {
+      console.log(filteredData);
+      console.log(data);
+    }
+  };
+
   return (
-    <div className="grid md:grid-cols-2 gap-6 lg:gap-12 items-start max-w-6xl px-4 mx-auto py-6">
-      <div className="grid gap-4 md:gap-10">
-        <div className="grid gap-4">
-          <h1 className="font-bold text-3xl">Grandmas Homemade Apple Pie</h1>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-0.5">
-              <StarIcon className="w-5 h-5 fill-primary" />
-              <StarIcon className="w-5 h-5 fill-primary" />
-              <StarIcon className="w-5 h-5 fill-primary" />
-              <StarIcon className="w-5 h-5 fill-muted stroke-muted-foreground" />
-              <StarIcon className="w-5 h-5 fill-muted stroke-muted-foreground" />
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              (124 purchases)
-            </div>
-          </div>
-        </div>
-        <div className="grid gap-4">
-          <img
-            alt="Recipe Image"
-            className="aspect-[4/3] object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
-            height="600"
-            src="/src/assets/images/banner-image.jpg"
-            width="800"
+    <div className="mx-auto max-w-md space-y-6 py-12">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Create New Recipe</h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Fill out the form to add a new recipe.
+        </p>
+      </div>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid gap-2">
+          <Label htmlFor="name">
+            Recipe Name<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <Input id="name" placeholder="Enter recipe name" {...field} />
+            )}
           />
-          <div className="aspect-video rounded-lg overflow-hidden">
-            <iframe
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-              height="315"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              title="YouTube video player"
-              width="560"
-            />
-          </div>
+          {errors.name && (
+            <p className="text-rose-500">{errors.name.message}</p>
+          )}
         </div>
         <div className="grid gap-2">
-          <div className="flex items-center gap-2">
-            <UserIcon className="w-5 h-5 fill-gray-500 dark:fill-gray-400" />
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Purchased by: John Doe, Jane Smith, Bob Johnson, Sarah Lee
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <MailIcon className="w-5 h-5 fill-gray-500 dark:fill-gray-400" />
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Created by: grandma@homemade.com
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <GlobeIcon className="w-5 h-5 fill-gray-500 dark:fill-gray-400" />
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Country of Origin: United States
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="grid gap-4">
-        <div className="grid gap-2">
-          <h2 className="font-bold text-2xl">Ingredients</h2>
-          <ul className="list-disc pl-6 text-sm text-gray-500 dark:text-gray-400">
-            <li>6-8 Granny Smith apples, peeled, cored and sliced</li>
-            <li>1 cup white sugar</li>
-            <li>1 teaspoon ground cinnamon</li>
-            <li>1/2 teaspoon ground nutmeg</li>
-            <li>1 (15 ounce) package refrigerated pie crusts</li>
-            <li>2 tablespoons butter, cubed</li>
-          </ul>
+          <Label htmlFor="image">
+            Recipe Image<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="image"
+            control={control}
+            render={({ field }) => <Input id="image" type="file" {...field} />}
+          />
+          {errors.image && (
+            <p className="text-rose-500">{errors.image.message}</p>
+          )}
         </div>
         <div className="grid gap-2">
-          <h2 className="font-bold text-2xl">Instructions</h2>
-          <ol className="list-decimal pl-6 text-sm text-gray-500 dark:text-gray-400">
-            <li>Preheat oven to 425 degrees F (220 degrees C).</li>
-            <li>
-              In a large bowl, mix together the sliced apples, sugar, cinnamon,
-              and nutmeg.
-            </li>
-            <li>
-              Unroll one pie crust and place in a 9-inch pie dish. Pour the
-              apple mixture into the crust and dot with the cubed butter.
-            </li>
-            <li>
-              Unroll the remaining pie crust and place on top of the filling.
-              Crimp and flute the edges to seal. Cut several slits in the top
-              crust to allow steam to escape.
-            </li>
-            <li>
-              Bake in the preheated oven for 15 minutes. Reduce temperature to
-              350 degrees F (175 degrees C) and bake for an additional 30 to 40
-              minutes, until the crust is golden brown and the filling is
-              bubbly.
-            </li>
-            <li>
-              Allow to cool completely before serving, about 4 hours. Serve with
-              vanilla ice cream if desired.
-            </li>
-          </ol>
+          <Label htmlFor="details">
+            Recipe Details<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="details"
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                className="min-h-[120px]"
+                id="details"
+                placeholder="Enter recipe details"
+                {...field}
+              />
+            )}
+          />
+          {errors.details && (
+            <p className="text-rose-500">{errors.details.message}</p>
+          )}
         </div>
-      </div>
+        <div className="grid gap-2">
+          <Label htmlFor="video">
+            Embedded YouTube Video Code<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="video"
+            control={control}
+            render={({ field }) => (
+              <Input
+                id="video"
+                placeholder="Enter YouTube video code"
+                {...field}
+              />
+            )}
+          />
+          {errors.video && (
+            <p className="text-rose-500">{errors.video.message}</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="country">
+            Country<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="country"
+            control={control}
+            render={({ field }) => (
+              <Input id="country" placeholder="Enter country" {...field} />
+            )}
+          />
+          {errors.country && (
+            <p className="text-rose-500">{errors.country.message}</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="category">
+            Category<span className="text-rose-500"> *</span>
+          </Label>
+          <Controller
+            name="category"
+            control={control}
+            render={({ field }) => (
+              <SelectCategory
+                value={field.value}
+                onChange={field.onChange}
+                options={categoryOptions}
+                placeholder="Select category"
+              />
+            )}
+          />
+          {errors.category && (
+            <p className="text-rose-500">{errors.category.message}</p>
+          )}
+        </div>
+        <Button className="w-full" type="submit">
+          Save Recipe
+        </Button>
+      </form>
     </div>
   );
 };
