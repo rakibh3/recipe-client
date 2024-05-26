@@ -10,11 +10,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { FilterIcon, SearchIcon } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Recipes = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const axiosPublic = useAxiosPublic();
   const [recipes, setRecipes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCountry, setSearchCountry] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
+  // Get all recipes
   useEffect(() => {
     axiosPublic
       .get('/recipes')
@@ -27,13 +36,44 @@ const Recipes = () => {
       });
   }, [axiosPublic]);
 
-  const handleViewRecipe = (id) => {
-    console.log(id);
-  };
+  // const handleViewRecipe = async (id) => {
+  //   if (!user) {
+  //     return toast.error('Please login to view recipe details');
+  //   }
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchCountry, setSearchCountry] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  //   const recipe = recipes.find((recipe) => recipe.id === id);
+  //   if (recipe.creatorEmail === user?.email) {
+  //     navigate(`/recipe-details/${id}`);
+  //   }
+  //   if (user.coins < 10) {
+  //     alert('You do not have enough coins. Please purchase more coins.');
+  //     return navigate('/purchase-coins');
+  //   }
+
+  //   const confirmSpend = window.confirm(
+  //     'Do you want to spend 10 coins to view this recipe?'
+  //   );
+  //   if (confirmSpend) {
+  //     try {
+  //       await updateUserCoins(user.id, -10);
+  //       await updateUserCoins(recipe.creatorId, 1);
+  //       await addUserToPurchasedByArray(recipe.id, user.email);
+  //       await increaseRecipeWatchCount(recipe.id);
+
+  //       toast.success('Successfully spent 10 coins to view the recipe');
+  //       navigate(`/recipe-details/${id}`);
+  //     } catch (error) {
+  //       toast.error('An error occurred while processing your request');
+  //       console.error('Error handling view recipe:', error);
+  //     }
+  //   }
+  // };
+
+  const handleViewRecipe = (id) => {
+    if (user) {
+      navigate(`/recipe-details/${id}`);
+    }
+  };
 
   // Function to handle search input recipe
   const handleSearchRecipe = (event) => {
