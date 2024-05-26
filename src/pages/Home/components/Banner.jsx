@@ -1,6 +1,27 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import useAuth from '../../../hooks/useAuth';
 
 const Banner = () => {
+  const { user, googleSignIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleNavLinkClick = () => {
+    if (!user) {
+      const confirmed = window.confirm('Do you want to login to add recipes?');
+      if (confirmed) {
+        googleSignIn()
+          .then(() => {
+            navigate('/add-recipe');
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <section className="relative bg-cover bg-center bg-no-repeat bg-[url('/src/assets/images/banner-image.jpg')] ">
       <div className="absolute inset-0 bg-white/75 sm:bg-transparent sm:bg-gradient-to-r sm:from-white/95 sm:to-white/25 rtl:sm:bg-gradient-to-l"></div>
@@ -29,6 +50,7 @@ const Banner = () => {
             </NavLink>
 
             <NavLink
+              onClick={handleNavLinkClick}
               to="/add-recipe"
               className="block w-full rounded bg-white px-12 py-3 text-sm font-medium text-rose-600 shadow hover:text-rose-700 focus:outline-none focus:ring active:text-rose-500 sm:w-auto"
             >

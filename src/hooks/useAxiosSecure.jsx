@@ -1,8 +1,8 @@
-import { Axios } from 'axios';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useAuth from './useAuth';
 
-const axiosSecure = Axios.create({
+const axiosSecure = axios.create({
   baseURL: 'http://localhost:5000',
 });
 
@@ -14,7 +14,6 @@ const useAxiosSecure = () => {
   axiosSecure.interceptors.request.use(
     function (config) {
       const token = localStorage.getItem('accessToken');
-      console.log('axiosSecure', token);
 
       config.headers.authorization = token;
       return config;

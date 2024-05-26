@@ -1,21 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import logo from '../../assets/logo.svg';
 import { NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaGoogle } from 'react-icons/fa';
 import { BsCoin } from 'react-icons/bs';
 import useAuth from '../../hooks/useAuth';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const Navbar = () => {
   const { user, logOut, googleSignIn } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [coin, setCoin] = useState(0);
+
+  const axiosSecure = useAxiosSecure();
 
   const handleGoogleSignIn = () => {
     googleSignIn()
       .then((result) => {
-        toast.success(`Login Successful ${result.user.displayName}`, {
-          duration: 8000,
-        });
+        toast.success(`Login Successful ${result.user.displayName}`);
       })
       .catch((error) => {
         toast.error(error.message, {
@@ -23,6 +25,25 @@ const Navbar = () => {
         });
       });
   };
+
+  useEffect(() => {
+    let timeoutId;
+
+    const getCoin = async () => {
+      try {
+        const res = await axiosSecure.get('/user');
+        setCoin(res?.data?.data?.coin);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (user) {
+      timeoutId = setTimeout(getCoin, 1500);
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [axiosSecure, user]);
 
   const handleGoogleLogout = () => {
     logOut()
@@ -73,22 +94,23 @@ const Navbar = () => {
             >
               Recipes
             </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                isActive
-                  ? 'text-rose-600 '
-                  : 'text-gray-800 hover:text-rose-600 '
-              }
-              to="/add-recipe"
-            >
-              Add-recipes
-            </NavLink>
-            <div className="flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
-              <BsCoin className="w-6 h-6 text-yellow-500" />
-              <span className="text-gray-800 font-bold">100</span>
-            </div>
+
             {user ? (
               <>
+                <NavLink
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'text-rose-600 '
+                      : 'text-gray-800 hover:text-rose-600 '
+                  }
+                  to="/add-recipe"
+                >
+                  Add-recipes
+                </NavLink>
+                <div className="flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
+                  <BsCoin className="w-6 h-6 text-yellow-500" />
+                  <span className="text-gray-800 font-bold">{coin}</span>
+                </div>
                 {user?.photoURL && (
                   <img
                     src={user?.photoURL}
@@ -159,30 +181,32 @@ const Navbar = () => {
           <div className="md:hidden grid items-end">
             <div className=" pt-2 pb-3 space-y-2 grid">
               <NavLink to="/">Home</NavLink>
-
               <NavLink to="/recipes">Recipes</NavLink>
-              <NavLink to="/add-recipe">Add-recipes</NavLink>
-              {/* Mobile Coin */}
-              <div className="w-[90px] px-2 flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
-                <BsCoin className="w-6 h-6 text-yellow-500" />
-                <span className="text-gray-800 font-bold">100</span>
-              </div>
+
               {user ? (
-                <div className="space-y-2">
-                  {user?.photoURL && (
-                    <img
-                      src={user?.photoURL}
-                      alt={user?.displayName}
-                      className="w-20 h-20 rounded-full"
-                    />
-                  )}
-                  <button
-                    className="bg-rose-600 text-white font-bold py-2 px-4 rounded hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-opacity-50"
-                    onClick={handleGoogleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
+                <>
+                  <NavLink to="/add-recipe">Add-recipes</NavLink>
+                  {/* Mobile Coin */}
+                  <div className="w-[90px] px-2 flex gap-2 rounded-2xl p-[6px] border-2 border-rose-500 ">
+                    <BsCoin className="w-6 h-6 text-yellow-500" />
+                    <span className="text-gray-800 font-bold">{coin}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {user?.photoURL && (
+                      <img
+                        src={user?.photoURL}
+                        alt={user?.displayName}
+                        className="w-20 h-20 rounded-full"
+                      />
+                    )}
+                    <button
+                      className="bg-rose-600 text-white font-bold py-2 px-4 rounded hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-opacity-50"
+                      onClick={handleGoogleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div>
                   <button

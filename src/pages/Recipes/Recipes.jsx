@@ -1,91 +1,175 @@
+import useAxiosPublic from '../../hooks/useAxiosPublic';
+import { useEffect, useState } from 'react';
+import RecipesCard from './RecipesCard';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { HeartIcon } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenu,
+} from '@/components/ui/dropdown-menu';
+
+import { FilterIcon, SearchIcon } from 'lucide-react';
 
 const Recipes = () => {
+  const axiosPublic = useAxiosPublic();
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    axiosPublic
+      .get('/recipes')
+      .then((response) => {
+        const recipes = response?.data?.data;
+        setRecipes(recipes);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [axiosPublic]);
+
+  const handleViewRecipe = (id) => {
+    console.log(id);
+  };
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCountry, setSearchCountry] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  // Function to handle search input recipe
+  const handleSearchRecipe = (event) => {
+    const { value } = event.target;
+    setSearchQuery(value);
+    console.log('Search:', value);
+  };
+
+  const handleSearchCountry = (event) => {
+    const { value } = event.target;
+    setSearchCountry(value);
+    console.log('Search:', value);
+  };
+
+  const handleCategoryChange = (event) => {
+    const { checked, id } = event.target;
+    const category = id.replace('category-', '');
+
+    if (checked) {
+      setSelectedCategories([...selectedCategories, category]);
+    } else {
+      setSelectedCategories(
+        selectedCategories.filter((cat) => cat !== category)
+      );
+    }
+
+    setSelectedCategories((updatedSelectedCategories) => {
+      return updatedSelectedCategories;
+    });
+  };
+  console.log(selectedCategories);
+
   return (
     <>
-      <Card className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-lg shadow-md mt-14 items-center">
-        <img
-          alt="Recipe Image"
-          className="w-full h-[250px] object-cover rounded-lg"
-          src="/src/assets/images/banner-image.jpg"
-          style={{
-            aspectRatio: '600/400',
-            objectFit: 'cover',
-          }}
-          width={600}
-        />
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold">Homemade Pasta Carbonara</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Purchased by:
-              <span className="font-medium">John Doe</span>
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p>
-              <span className="font-medium">Creator:</span>{' '}
-              <NavLink className="text-blue-500 hover:underline" to="">
-                chef@example.com
-              </NavLink>
-            </p>
-            <p>
-              <span className="font-medium">Country of Origin:</span>
-              Italy
-            </p>
-          </div>
-          <div className="flex gap-8">
-            <Button size="lg">View The Recipe</Button>
-            <Button size="lg" variant="outline">
-              <HeartIcon className="w-5 h-5 mr-2" />
-              Add to Favorites
-            </Button>
+      {/*  Search and Filter Section Start */}
+      <div className="bg-white dark:bg-gray-950 px-4 md:px-6 py-6 md:py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="hidden md:block md:text-3xl font-bold">
+              All Recipes
+            </h1>
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <Input
+                  className="pl-10 pr-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Search recipes..."
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchRecipe}
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="flex items-center gap-2"
+                      variant="outline"
+                      type="checkbox"
+                    >
+                      <FilterIcon className="w-5 h-5" />
+                      Filter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[300px] p-4">
+                    <div className="grid gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Category</h3>
+                        <div className="grid gap-2">
+                          <label className="flex items-center gap-2">
+                            <input
+                              id="category-breakfast"
+                              type="checkbox"
+                              onChange={handleCategoryChange}
+                            />
+                            Breakfast
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              id="category-lunch"
+                              type="checkbox"
+                              onChange={handleCategoryChange}
+                            />
+                            Lunch
+                          </label>
+
+                          <label className="flex items-center gap-2">
+                            <input
+                              id="category-dinner"
+                              type="checkbox"
+                              onChange={handleCategoryChange}
+                            />
+                            Dinner
+                          </label>
+
+                          <label className="flex items-center gap-2">
+                            <input
+                              id="category-dessert"
+                              type="checkbox"
+                              onChange={handleCategoryChange}
+                            />
+                            Dessert
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Country</h3>
+                        <div className="relative flex-1">
+                          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
+
+                          <Input
+                            className="pl-10 pr-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                            placeholder="Filter By Country"
+                            type="text"
+                            value={searchCountry}
+                            onChange={handleSearchCountry}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           </div>
         </div>
-      </Card>
-      <Card className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-lg shadow-md mt-14 items-center">
-        <img
-          alt="Recipe Image"
-          className="w-full h-[250px] object-cover rounded-lg"
-          src="/src/assets/images/banner-image.jpg"
-          style={{
-            aspectRatio: '600/400',
-            objectFit: 'cover',
-          }}
-          width={600}
+      </div>
+      {/* Search and Filter Section End */}
+
+      {recipes.map((recipe) => (
+        <RecipesCard
+          key={recipe._id}
+          recipe={recipe}
+          handleViewRecipe={handleViewRecipe}
         />
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold">Homemade Pasta Carbonara</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Purchased by:
-              <span className="font-medium">John Doe</span>
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p>
-              <span className="font-medium">Creator:</span>{' '}
-              <a className="text-blue-500 hover:underline" href="#">
-                chef@example.com
-              </a>
-            </p>
-            <p>
-              <span className="font-medium">Country of Origin:</span>
-              Italy
-            </p>
-          </div>
-          <div className="flex gap-8">
-            <Button size="lg">View The Recipe</Button>
-            <Button size="lg" variant="outline">
-              <HeartIcon className="w-5 h-5 mr-2" />
-              Add to Favorites
-            </Button>
-          </div>
-        </div>
-      </Card>
+      ))}
     </>
   );
 };
