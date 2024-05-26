@@ -1,190 +1,181 @@
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { z } from 'zod';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import SelectCategory from '../../components/Form/SelectCategory';
+import { useForm } from 'react-hook-form';
+import useAxiosPublic from '../../hooks/useAxiosPublic';
+import useAuth from '../../hooks/useAuth';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 import toast from 'react-hot-toast';
 
-const schema = z.object({
-  name: z.string({
-    required_error: 'Recipe name is required',
-  }),
-  image: z.any({
-    required_error: 'Recipe image is required',
-  }),
-  details: z.string({
-    required_error: 'Recipe details is required',
-  }),
-  video: z.string({
-    required_error: 'YouTube video code is required',
-  }),
-  country: z.string({
-    required_error: 'Country is required',
-  }),
-  category: z.string({
-    required_error: 'Category is required',
-  }),
-});
-
-const defaultValues = {
-  name: '',
-  image: '',
-  details: '',
-  video: '',
-  country: '',
-  category: '',
-};
+const image_hosting_key = import.meta.env.VITE_imageBB_Key;
+const image_hosting_url = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const AddRecipes = () => {
+  const { user } = useAuth();
+
   const {
-    control,
+    register,
     handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: defaultValues,
-  });
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({});
 
-  const categoryOptions = [
-    { value: 'appetizer', label: 'Appetizer' },
-    { value: 'main-dish', label: 'Main Dish' },
-    { value: 'dessert', label: 'Dessert' },
-    { value: 'salad', label: 'Salad' },
-    { value: 'soup', label: 'Soup' },
-  ];
+  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
-  const onSubmit = (data) => {
-    // Filter out default values that are not empty
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(
-        ([key, value]) => value !== defaultValues[key]
-      )
-    );
-    if (Object.keys(filteredData).length === 0) {
-      toast.error('Please fill out all required fields.');
-    } else {
-      console.log(filteredData);
-      console.log(data);
+  const onSubmit = async (data) => {
+    const imageFile = { image: data.image[0] };
+
+    const res = await axiosPublic.post(image_hosting_url, imageFile, {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    });
+
+    if (res.data.success) {
+      const recipeItem = {
+        name: data.name,
+        image: res.data.data.display_url,
+        details: data.details,
+        youtubeCode: data.video,
+        country: data.country,
+        category: data.category,
+        creatorEmail: user?.email,
+        watchCount: 0,
+        purchasedBy: [],
+      };
+
+      const recipeRes = await axiosSecure.post('/recipes', recipeItem);
+      if (recipeRes.data.success) {
+        toast.success('Recipe added successfully');
+        reset();
+      }
     }
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-12">
+    <div className="mx-4 sm:mx-auto  max-w-md space-y-6 py-12">
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Create New Recipe</h1>
+        <h1 className="text-4xl font-bold mb-2">Create New Recipe</h1>
         <p className="text-gray-500 dark:text-gray-400">
           Fill out the form to add a new recipe.
         </p>
       </div>
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-2">
-          <Label htmlFor="name">
-            Recipe Name<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="name"
-            control={control}
-            render={({ field }) => (
-              <Input id="name" placeholder="Enter recipe name" {...field} />
-            )}
+          <label className="text-sm font-medium" htmlFor="name">
+            Recipe Name
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <input
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50 dark:placeholder-rose-400"
+            placeholder="Enter recipe name"
+            type="text"
+            {...register('name', { required: 'Recipe name is required' })}
           />
           {errors.name && (
-            <p className="text-rose-500">{errors.name.message}</p>
+            <p className="text-rose-500 text-xs mt-2">{errors.name.message}</p>
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="image">
-            Recipe Image<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="image"
-            control={control}
-            render={({ field }) => <Input id="image" type="file" {...field} />}
+          <label className="text-sm font-medium" htmlFor="image">
+            Recipe Image
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <input
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50 dark:placeholder-rose-400"
+            type="file"
+            {...register('image', { required: 'Recipe image is required' })}
           />
           {errors.image && (
-            <p className="text-rose-500">{errors.image.message}</p>
+            <span className="text-sm text-rose-500">
+              {errors.image.message}
+            </span>
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="details">
-            Recipe Details<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="details"
-            control={control}
-            render={({ field }) => (
-              <Textarea
-                className="min-h-[120px]"
-                id="details"
-                placeholder="Enter recipe details"
-                {...field}
-              />
-            )}
+          <label className="text-sm font-medium" htmlFor="details">
+            Recipe Details
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <textarea
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50 dark:placeholder-rose-400 min-h-[120px]"
+            placeholder="Enter recipe details"
+            {...register('details', {
+              required: 'Recipe details are required',
+            })}
           />
           {errors.details && (
-            <p className="text-rose-500">{errors.details.message}</p>
+            <span className="text-sm text-rose-500">
+              {errors.details.message}
+            </span>
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="video">
-            Embedded YouTube Video Code<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="video"
-            control={control}
-            render={({ field }) => (
-              <Input
-                id="video"
-                placeholder="Enter YouTube video code"
-                {...field}
-              />
-            )}
+          <label className="text-sm font-medium" htmlFor="video">
+            Embedded YouTube Video Code
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <input
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50 dark:placeholder-rose-400"
+            placeholder="Enter YouTube video code"
+            type="text"
+            {...register('video', {
+              required: 'YouTube video code is required',
+            })}
           />
           {errors.video && (
-            <p className="text-rose-500">{errors.video.message}</p>
+            <span className="text-sm text-rose-500">
+              {errors.video.message}
+            </span>
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="country">
-            Country<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="country"
-            control={control}
-            render={({ field }) => (
-              <Input id="country" placeholder="Enter country" {...field} />
-            )}
+          <label className="text-sm font-medium" htmlFor="country">
+            Country
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <input
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50 dark:placeholder-rose-400"
+            placeholder="Enter country"
+            type="text"
+            {...register('country', { required: 'Country is required' })}
           />
           {errors.country && (
-            <p className="text-rose-500">{errors.country.message}</p>
+            <span className="text-sm text-rose-500">
+              {errors.country.message}
+            </span>
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="category">
-            Category<span className="text-rose-500"> *</span>
-          </Label>
-          <Controller
-            name="category"
-            control={control}
-            render={({ field }) => (
-              <SelectCategory
-                value={field.value}
-                onChange={field.onChange}
-                options={categoryOptions}
-                placeholder="Select category"
-              />
+          <label className="text-sm font-medium" htmlFor="category">
+            Category
+            <span className="text-rose-500 dark:text-rose-400"> *</span>
+          </label>
+          <div className="relative">
+            <select
+              className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-rose-500 focus:outline-none focus:ring-rose-500 sm:text-sm dark:border-gray-600 dark:bg-rose-950 dark:text-rose-50"
+              {...register('category', { required: 'Category is required' })}
+            >
+              <option value="">Select category</option>
+              <option value="appetizer">Appetizer</option>
+              <option value="main-dish">Main Dish</option>
+              <option value="dessert">Dessert</option>
+              <option value="salad">Salad</option>
+              <option value="soup">Soup</option>
+            </select>
+            {errors.category && (
+              <span className="text-sm text-rose-500">
+                {errors.category.message}
+              </span>
             )}
-          />
-          {errors.category && (
-            <p className="text-rose-500">{errors.category.message}</p>
-          )}
+          </div>
         </div>
-        <Button className="w-full" type="submit">
+
+        <button
+          className="w-full rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:bg-rose-500 dark:hover:bg-rose-600 dark:focus:ring-rose-600"
+          type="submit"
+          disabled={isSubmitting}
+        >
           Save Recipe
-        </Button>
+        </button>
       </form>
     </div>
   );
