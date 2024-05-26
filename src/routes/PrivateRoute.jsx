@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
-import { useContext, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { AuthContext } from '../providers/AuthProvider';
+
 import Spinner from '../components/Spinner/Spinner';
 import toast from 'react-hot-toast';
+import useAuth from '../hooks/useAuth';
 
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
   const location = useLocation();
   const toastShownRef = useRef(false);
 

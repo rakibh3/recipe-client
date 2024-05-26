@@ -1,13 +1,14 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import logo from '../../assets/logo.svg';
 import { NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaGoogle } from 'react-icons/fa';
-import { AuthContext } from '../../providers/AuthProvider';
+
 import { BsCoin } from 'react-icons/bs';
+import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
-  const { user, logOut, googleSignIn } = useContext(AuthContext);
+  const { user, logOut, googleSignIn } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleGoogleSignIn = () => {
