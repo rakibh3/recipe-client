@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Eye, GlobeIcon, MailIcon, StarIcon, UserIcon } from 'lucide-react';
+import { Eye, GlobeIcon, MailIcon, UserIcon } from 'lucide-react';
 import { useLoaderData } from 'react-router-dom';
 
 // const youtubeCode = I_6aMZwf9CU;

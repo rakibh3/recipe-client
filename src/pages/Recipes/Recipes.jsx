@@ -13,11 +13,14 @@ import { FilterIcon, SearchIcon } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const Recipes = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  console.log(loading);
   const navigate = useNavigate();
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [recipes, setRecipes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCountry, setSearchCountry] = useState('');
@@ -36,42 +39,58 @@ const Recipes = () => {
       });
   }, [axiosPublic]);
 
-  // const handleViewRecipe = async (id) => {
-  //   if (!user) {
-  //     return toast.error('Please login to view recipe details');
-  //   }
+  const handleViewRecipe = async (id) => {
+    if (!user) {
+      return toast.error('Please login to view recipe details');
+    }
 
-  //   const recipe = recipes.find((recipe) => recipe.id === id);
-  //   if (recipe.creatorEmail === user?.email) {
-  //     navigate(`/recipe-details/${id}`);
-  //   }
-  //   if (user.coins < 10) {
-  //     alert('You do not have enough coins. Please purchase more coins.');
-  //     return navigate('/purchase-coins');
-  //   }
+    const recipe = recipes.find((recipe) => recipe._id === id);
 
-  //   const confirmSpend = window.confirm(
-  //     'Do you want to spend 10 coins to view this recipe?'
-  //   );
-  //   if (confirmSpend) {
-  //     try {
-  //       await updateUserCoins(user.id, -10);
-  //       await updateUserCoins(recipe.creatorId, 1);
-  //       await addUserToPurchasedByArray(recipe.id, user.email);
-  //       await increaseRecipeWatchCount(recipe.id);
-
-  //       toast.success('Successfully spent 10 coins to view the recipe');
-  //       navigate(`/recipe-details/${id}`);
-  //     } catch (error) {
-  //       toast.error('An error occurred while processing your request');
-  //       console.error('Error handling view recipe:', error);
-  //     }
-  //   }
-  // };
-
-  const handleViewRecipe = (id) => {
-    if (user) {
+    // Function to navigate to recipe details page and increment watch count
+    const navigateToRecipeDetails = async () => {
       navigate(`/recipe-details/${id}`);
+      try {
+        await axiosSecure.patch('/increase-watch-count', { recipeId: id });
+      } catch (error) {
+        console.error('Error incrementing watch count:', error);
+      }
+    };
+
+    if (recipe.creatorEmail === user?.email) {
+      toast.success('You are the creator of this recipe');
+      await navigateToRecipeDetails();
+      return;
+    }
+
+    if (recipe.purchasedBy.includes(user.email)) {
+      toast.success('You have already purchased this recipe');
+      await navigateToRecipeDetails();
+      return;
+    }
+    // if (user.coins < 10) {
+    //   alert('You do not have enough coins. Please purchase more coins.');
+    //   return navigate('/purchase-coins');
+    // }
+
+    const confirmSpend = window.confirm(
+      'Do you want to spend 10 coins to view this recipe?'
+    );
+    if (confirmSpend) {
+      await axiosSecure.patch('/update-user-coins', {
+        reduceAmount: 10,
+      });
+
+      await axiosSecure.patch('/increase-creaton-coin', {
+        recipeCreatorEmail: recipe.creatorEmail,
+      });
+
+      await axiosSecure.patch('/add-user-to-purchased-by-array', {
+        recipeId: recipe?._id,
+      });
+
+      toast.success('Successfully spent 10 coins to view the recipe');
+      await navigateToRecipeDetails();
+      return;
     }
   };
 
