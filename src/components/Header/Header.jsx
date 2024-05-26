@@ -3,7 +3,6 @@ import logo from '../../assets/logo.svg';
 import { NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaGoogle } from 'react-icons/fa';
-
 import { BsCoin } from 'react-icons/bs';
 import useAuth from '../../hooks/useAuth';
 
