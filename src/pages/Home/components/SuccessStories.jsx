@@ -1,7 +1,22 @@
-/* eslint-disable react/prop-types */
 import CountUp from 'react-countup';
+import useAxiosPublic from '../../../hooks/useAxiosPublic';
+import { useEffect, useState } from 'react';
 
-const SuccessStories = ({ recipesCount = 30, usersCount = 80 }) => {
+const SuccessStories = () => {
+  const [recipesCount, setRecipesCount] = useState(0);
+  const [usersCount, setUsersCount] = useState(0);
+  const axiosPublic = useAxiosPublic();
+
+  useEffect(() => {
+    axiosPublic.get('/total-recipes').then((response) => {
+      setRecipesCount(response?.data?.data);
+    });
+
+    axiosPublic.get('/total-users').then((response) => {
+      setUsersCount(response?.data?.data);
+    });
+  }, [axiosPublic]);
+
   return (
     <section className="bg-gray-100 py-16">
       <div className="container mx-auto px-4">
@@ -9,7 +24,7 @@ const SuccessStories = ({ recipesCount = 30, usersCount = 80 }) => {
         <div className="flex justify-center items-center space-x-6">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-2">
-              <CountUp end={recipesCount} duration={2} separator="," />
+              <CountUp end={recipesCount} duration={3} separator="," />
             </h3>
             <p className="text-lg text-gray-600">Recipes to Explore</p>
           </div>
