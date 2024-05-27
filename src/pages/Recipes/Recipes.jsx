@@ -16,8 +16,7 @@ import toast from 'react-hot-toast';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const Recipes = () => {
-  const { user, loading } = useAuth();
-  console.log(loading);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
@@ -25,6 +24,7 @@ const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCountry, setSearchCountry] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [coin, setCoin] = useState(0);
 
   // Get all recipes
   useEffect(() => {
@@ -39,7 +39,36 @@ const Recipes = () => {
       });
   }, [axiosPublic]);
 
+  // Get user coins info from the server
+  const reloadCoinBalance = async () => {
+    try {
+      const res = await axiosSecure.get('/user');
+      setCoin(res?.data?.data?.coin);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    let timeoutId;
+
+    const getCoin = async () => {
+      try {
+        const res = await axiosSecure.get('/user');
+        setCoin(res?.data?.data?.coin);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (user) {
+      timeoutId = setTimeout(getCoin, 1000);
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [axiosSecure, user]);
+
   const handleViewRecipe = async (id) => {
+    // if user Not Logged in
     if (!user) {
       return toast.error('Please login to view recipe details');
     }
@@ -56,21 +85,24 @@ const Recipes = () => {
       }
     };
 
+    // user Logged in and he is the creator of this recipe
     if (recipe.creatorEmail === user?.email) {
       toast.success('You are the creator of this recipe');
       await navigateToRecipeDetails();
       return;
     }
 
+    // User already purchased this recipe before
     if (recipe.purchasedBy.includes(user.email)) {
       toast.success('You have already purchased this recipe');
       await navigateToRecipeDetails();
       return;
     }
-    // if (user.coins < 10) {
-    //   alert('You do not have enough coins. Please purchase more coins.');
-    //   return navigate('/purchase-coins');
-    // }
+
+    if (coin < 10) {
+      toast.error('You do not have enough coins. Please purchase more coins.');
+      return navigate('/purchase-coins');
+    }
 
     const confirmSpend = window.confirm(
       'Do you want to spend 10 coins to view this recipe?'
@@ -90,6 +122,7 @@ const Recipes = () => {
 
       toast.success('Successfully spent 10 coins to view the recipe');
       await navigateToRecipeDetails();
+      await reloadCoinBalance();
       return;
     }
   };

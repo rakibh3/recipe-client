@@ -37,6 +37,7 @@ const AuthProvider = ({ children }) => {
           displayName: currentUser?.displayName,
           photoURL: currentUser?.photoURL,
           email: currentUser?.email,
+          coin: 50,
         };
 
         axiosPublic.post('/user', userData).then((res) => {
