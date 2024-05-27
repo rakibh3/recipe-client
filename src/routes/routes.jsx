@@ -39,7 +39,9 @@ const router = createBrowserRouter([
       {
         path: '/recipe-details/:id',
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/recipes/${params.id}`),
+          fetch(
+            `https://task--recipe-ac13aaec96a1.herokuapp.com/recipes/${params.id}`
+          ),
         element: (
           <PrivateRoute>
             <RecipeDetails />
