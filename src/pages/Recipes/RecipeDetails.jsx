@@ -86,9 +86,9 @@ const RecipeDetails = () => {
           </p>
         </div>
       </div>
-      {/* <div className="grid gap-4">
-        
-      </div> */}
+      <div className="grid gap-4 align-center">
+        <h1>Suggestion Based On your visitig category</h1>
+      </div>
     </div>
   );
 };
