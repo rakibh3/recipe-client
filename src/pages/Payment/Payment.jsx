@@ -74,7 +74,7 @@ const Payment = () => {
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto my-12 px-4 md:px-0">
-        <div>
+        <div className="px-2">
           <Elements stripe={stripePromise}>
             <CheckoutForm amount={selectedAmount * 100} />
           </Elements>

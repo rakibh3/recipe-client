@@ -83,7 +83,11 @@ const CheckoutForm = ({ amount }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md"
+    >
+      <div className="mb-4"></div>
       <CardElement
         options={{
           style: {
@@ -99,8 +103,14 @@ const CheckoutForm = ({ amount }) => {
             },
           },
         }}
+        className="p-3 border border-gray-300 rounded-md"
       />
-      <button disabled={!stripe || !clientSecret} type="submit">
+
+      <button
+        disabled={!stripe || !clientSecret}
+        type="submit"
+        className="w-full py-2 mt-2 px-4 bg-rose-700 text-white rounded-lg shadow hover:bg-rose-600  disabled:cursor-not-allowed"
+      >
         Pay
       </button>
     </form>
