@@ -26,10 +26,16 @@ const Recipes = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [coin, setCoin] = useState(0);
 
-  // Get all recipes
+  // Get all recipes with search query, country and category
   useEffect(() => {
     axiosPublic
-      .get('/recipes')
+      .get('/recipes', {
+        params: {
+          searchTerm: searchQuery,
+          country: searchCountry,
+          category: selectedCategories.join(','),
+        },
+      })
       .then((response) => {
         const recipes = response?.data?.data;
         setRecipes(recipes);
@@ -37,7 +43,7 @@ const Recipes = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [axiosPublic]);
+  }, [axiosPublic, searchCountry, searchQuery, selectedCategories]);
 
   // Get user coins info from the server
   const reloadCoinBalance = async () => {
@@ -131,13 +137,11 @@ const Recipes = () => {
   const handleSearchRecipe = (event) => {
     const { value } = event.target;
     setSearchQuery(value);
-    console.log('Search:', value);
   };
 
   const handleSearchCountry = (event) => {
     const { value } = event.target;
     setSearchCountry(value);
-    console.log('Search:', value);
   };
 
   const handleCategoryChange = (event) => {
@@ -156,7 +160,6 @@ const Recipes = () => {
       return updatedSelectedCategories;
     });
   };
-  console.log(selectedCategories);
 
   return (
     <>
@@ -197,28 +200,36 @@ const Recipes = () => {
                         <div className="grid gap-2">
                           <label className="flex items-center gap-2">
                             <input
-                              id="category-breakfast"
+                              id="category-appetizer"
                               type="checkbox"
                               onChange={handleCategoryChange}
                             />
-                            Breakfast
+                            Appetizer
                           </label>
                           <label className="flex items-center gap-2">
                             <input
-                              id="category-lunch"
+                              id="category-main-dish"
                               type="checkbox"
                               onChange={handleCategoryChange}
                             />
-                            Lunch
+                            Main Dish
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              id="category-soup"
+                              type="checkbox"
+                              onChange={handleCategoryChange}
+                            />
+                            Soup
                           </label>
 
                           <label className="flex items-center gap-2">
                             <input
-                              id="category-dinner"
+                              id="category-salad"
                               type="checkbox"
                               onChange={handleCategoryChange}
                             />
-                            Dinner
+                            Salad
                           </label>
 
                           <label className="flex items-center gap-2">
